@@ -13,11 +13,14 @@ export class DeploymentHelper {
     private static listDeploymentsResult: Models.DeploymentsListResponse = null;
 
     private static async listDeployments(client: AppPlatformManagementClient, params: ActionParameters): Promise<Models.DeploymentsListResponse> {
+        console.log("hello");
         if (this.listDeploymentsResult != null) {
             core.debug('list from cache, list deployments response: ' + this.listDeploymentsResult._response.bodyAsText);
             return this.listDeploymentsResult;
         }
+        console.log("before call");
         const deployments: Models.DeploymentsListResponse = await client.deployments.list(params.resourceGroupName, params.serviceName, params.appName);
+        console.log('list deployments response: ' + deployments._response.bodyAsText);
         core.debug('list deployments response: ' + deployments._response.bodyAsText);
         if (!this.GET_SUCCESS_CODE.includes(deployments._response.status)) {
             throw Error('ListDeploymentsError');
