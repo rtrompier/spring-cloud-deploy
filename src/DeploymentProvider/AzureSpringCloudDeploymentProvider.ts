@@ -123,11 +123,7 @@ export class AzureSpringCloudDeploymentProvider {
         let deploymentName: string;
 
         // Check if application exist, or create it
-        if(dh.appExist(this.client, this.params)) {
-            console.log("Application not found, create it");
-            dh.createOrUpdateApp(this.client, this.params);
-        }
-
+        await dh.createOrUpdateApp(this.client, this.params);
 
         if (this.params.deploymentName) {
             console.log(`Deploying for ${this.logDetail} to deployment ${this.params.deploymentName}.`);
