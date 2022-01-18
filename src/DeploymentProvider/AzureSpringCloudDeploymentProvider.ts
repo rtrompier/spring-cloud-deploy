@@ -125,7 +125,10 @@ export class AzureSpringCloudDeploymentProvider {
         if (this.params.deploymentName) {
             console.log(`Deploying for ${this.logDetail} to deployment ${this.params.deploymentName}.`);
             deploymentName = this.params.deploymentName;
+            console.log(`deploymentName`, deploymentName);
+            console.log(`getAllDeploymentsName`);
             let deploymentNames: Array<string> = await dh.getAllDeploymentsName(this.client, this.params);
+            console.log(`Found deployments names`, deploymentNames);
             if (!deploymentNames || !deploymentNames.includes(deploymentName)) {
                 console.log(`Deployment ${deploymentName} does not exist`);
                 if (this.params.createNewDeployment) {
