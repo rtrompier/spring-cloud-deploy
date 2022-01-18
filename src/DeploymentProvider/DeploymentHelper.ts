@@ -59,12 +59,13 @@ export class DeploymentHelper {
         }
         return false;
     }
-    
+
     public static async createOrUpdateApp(client: AppPlatformManagementClient, params: ActionParameters): Promise<void> {
         const appResource: Models.AppResource = {
             name: params.appName, 
         };
         await client.apps.createOrUpdate(params.resourceGroupName, params.serviceName, params.appName, appResource);
+        console.log(`Application ${params.appName} created or updated`);
     }
 
     public static async getStagingDeploymentNames(client: AppPlatformManagementClient, params: ActionParameters): Promise<Array<string>> {
