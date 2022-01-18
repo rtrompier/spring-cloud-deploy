@@ -49,6 +49,24 @@ export class DeploymentHelper {
         return getResponse;
     }
 
+    public static async appExist(client: AppPlatformManagementClient, params: ActionParameters): Promise<Boolean> {
+        console.log("Check if app exist", params.appName);
+        const apps: Models.AppsListResponse = await client.apps.list(params.resourceGroupName, params.serviceName);
+        console.log("Existing apps", apps);
+        const app = apps.find((app) => app.name === params.appName);
+        if(app) {
+            return true;
+        }
+        return false;
+    }
+    
+    public static async createOrUpdateApp(client: AppPlatformManagementClient, params: ActionParameters): Promise<void> {
+        const appResource: Models.AppResource = {
+            name: params.appName, 
+        };
+        await client.apps.createOrUpdate(params.resourceGroupName, params.serviceName, params.appName, appResource);
+    }
+
     public static async getStagingDeploymentNames(client: AppPlatformManagementClient, params: ActionParameters): Promise<Array<string>> {
         const deployments: Models.DeploymentsListResponse = await this.listDeployments(client, params);
         let ret: Array<string> = [];
