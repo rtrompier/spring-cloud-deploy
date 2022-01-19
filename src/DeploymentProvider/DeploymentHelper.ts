@@ -140,13 +140,14 @@ export class DeploymentHelper {
         }
         console.log('Before upload artefact');
         await uploadFileToSasUrl(uploadResponse.uploadUrl, fileToUpload);
-        console.log('After upload artefact');
         let getDeploymentName = params.deploymentName;
+        console.log('Find deployment', getDeploymentName);
         if (params.createNewDeployment) {
             getDeploymentName = await this.getProductionDeploymentName(client, params);
-            console.log('Production Deployment Name', getDeploymentName);
+            console.log('Production Deployment Name found', getDeploymentName);
         }
         let getResponse: Models.DeploymentResource = await this.getDeployment(client, params, getDeploymentName);
+        console.log('Deployment found', getResponse);
         let deploymentResource: Models.DeploymentResource;
         let sourcePart: Models.UserSourceInfo = {
             relativePath: uploadResponse.relativePath,
@@ -188,8 +189,8 @@ export class DeploymentHelper {
             deploymentSettingsPart.environmentVariables = transformedEnvironmentVariables;
         }
         if (getResponse) {
-            let source = {...getResponse.properties.source, ...sourcePart};
-            let deploymentSettings = {...getResponse.properties.deploymentSettings, ...deploymentSettingsPart};
+            let source = {...getResponse?.properties?.source, ...sourcePart};
+            let deploymentSettings = {...getResponse?.properties?.deploymentSettings, ...deploymentSettingsPart};
             deploymentResource = {
                 properties: {
                     source: source,
