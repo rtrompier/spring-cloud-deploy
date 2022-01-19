@@ -3,6 +3,7 @@ import { AppPlatformManagementClient, AppPlatformManagementModels as Models } fr
 import { uploadFileToSasUrl } from "./azure-storage";
 import * as core from "@actions/core";
 import { parse } from 'azure-actions-utility/parameterParserUtility';
+import { diffieHellman } from 'crypto';
 
 export class DeploymentHelper {
 
@@ -31,7 +32,7 @@ export class DeploymentHelper {
 
     private static async getDeployment(client: AppPlatformManagementClient, params: ActionParameters, deploymentName: string): Promise<Models.DeploymentResource> {
         if (this.listDeploymentsResult != null) {
-            core.debug('get from list cache, list deployments response: ' + this.listDeploymentsResult._response.bodyAsText);
+            console.log('get from list cache, list deployments response: ' + this.listDeploymentsResult._response.bodyAsText);
             let ret: Models.DeploymentResource;
             this.listDeploymentsResult.forEach(deployment => {
                 core.debug('deployment str: ' + JSON.stringify(deployment));
@@ -42,7 +43,7 @@ export class DeploymentHelper {
             return ret;
         }
         const getResponse: Models.DeploymentsGetResponse = await client.deployments.get(params.resourceGroupName, params.serviceName, params.appName, deploymentName);
-        core.debug('get deployments response: ' + getResponse._response.bodyAsText);
+        console.log('get deployments response: ' + getResponse._response.bodyAsText);
         if (!this.GET_SUCCESS_CODE.includes(getResponse._response.status)) {
             throw Error('GetDeploymentsError');
         }
@@ -148,6 +149,10 @@ export class DeploymentHelper {
         }
         let getResponse: Models.DeploymentResource = await this.getDeployment(client, params, getDeploymentName);
         console.log('Deployment found', getResponse);
+        if(!getResponse) {
+            console.log('Deployment not found, pipeline will create it');
+        }
+
         let deploymentResource: Models.DeploymentResource;
         let sourcePart: Models.UserSourceInfo = {
             relativePath: uploadResponse.relativePath,
