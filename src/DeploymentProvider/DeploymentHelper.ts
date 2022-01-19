@@ -134,14 +134,17 @@ export class DeploymentHelper {
 
     public static async deploy(client: AppPlatformManagementClient, params: ActionParameters, sourceType: string, fileToUpload: string) {
         let uploadResponse: Models.AppsGetResourceUploadUrlResponse = await client.apps.getResourceUploadUrl(params.resourceGroupName, params.serviceName, params.appName);
-        core.debug('request upload url response: ' + uploadResponse._response.bodyAsText);
+        console.log('request upload url response: ' + uploadResponse._response.bodyAsText);
         if (!this.GET_SUCCESS_CODE.includes(uploadResponse._response.status)) {
             throw Error('RequestUploadUrlError');
         }
+        console.log('Before upload artefact');
         await uploadFileToSasUrl(uploadResponse.uploadUrl, fileToUpload);
+        console.log('After upload artefact');
         let getDeploymentName = params.deploymentName;
         if (params.createNewDeployment) {
             getDeploymentName = await this.getProductionDeploymentName(client, params);
+            console.log('Production Deployment Name', getDeploymentName);
         }
         let getResponse: Models.DeploymentResource = await this.getDeployment(client, params, getDeploymentName);
         let deploymentResource: Models.DeploymentResource;
@@ -175,13 +178,13 @@ export class DeploymentHelper {
         }
         let transformedEnvironmentVariables = {};
         if (params.environmentVariables) {
-            core.debug("Environment variables modified.");
+            console.log("Environment variables modified.");
             const parsedEnvVariables = parse(params.environmentVariables);
             //Parsed pairs come back as  {"key1":{"value":"val1"},"key2":{"value":"val2"}}
             Object.keys(parsedEnvVariables).forEach(key => {
                 transformedEnvironmentVariables[key] = parsedEnvVariables[key]['value'];
             });
-            core.debug('Environment Variables: ' + JSON.stringify(transformedEnvironmentVariables));
+            console.log('Environment Variables: ' + JSON.stringify(transformedEnvironmentVariables));
             deploymentSettingsPart.environmentVariables = transformedEnvironmentVariables;
         }
         if (getResponse) {
@@ -202,9 +205,9 @@ export class DeploymentHelper {
                 }
             };
         }
-        core.debug("deploymentResource: " + JSON.stringify(deploymentResource));
+        console.log("deploymentResource: " + JSON.stringify(deploymentResource));
         const response = await client.deployments.createOrUpdate(params.resourceGroupName, params.serviceName, params.appName, params.deploymentName, deploymentResource);
-        core.debug('deploy response: ' + response._response.bodyAsText);
+        console.log('deploy response: ' + response._response.bodyAsText);
         if (!this.CREATE_OR_UPDATE_SUCCESS_CODE.includes(response._response.status)) {
             throw Error('DeployError');
         }

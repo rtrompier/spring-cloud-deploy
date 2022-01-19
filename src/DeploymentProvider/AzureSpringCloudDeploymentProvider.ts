@@ -122,48 +122,51 @@ export class AzureSpringCloudDeploymentProvider {
             : this.params.Package.getPath();
         let deploymentName: string;
 
-        // Check if application exist, or create it
+        // Create app if not exist
         await dh.createOrUpdateApp(this.client, this.params);
 
-        if (this.params.deploymentName) {
-            console.log(`Deploying for ${this.logDetail} to deployment ${this.params.deploymentName}.`);
-            deploymentName = this.params.deploymentName;
-            console.log(`deploymentName`, deploymentName);
-            console.log(`getAllDeploymentsName`);
-            let deploymentNames: Array<string> = await dh.getAllDeploymentsName(this.client, this.params);
-            console.log(`Found deployments names`, deploymentNames);
-            if (!deploymentNames || !deploymentNames.includes(deploymentName)) {
-                console.log(`Deployment ${deploymentName} does not exist`);
-                if (this.params.createNewDeployment) {
-                    if (deploymentNames.length > 1) {
-                        throw Error(`More than 1 deployments already exist in ${this.logDetail}: ${JSON.stringify(deploymentNames)}`);
-                    } else {
-                        console.log(`New Deployment will be created for ${this.logDetail}.`);
-                    }
-                } else {
-                    throw Error(`Deployment ${deploymentName} doesn\'t exist in ${this.logDetail}`);
-                }
-            }
-        } else if (this.params.useStagingDeployment) {
-            console.log(`Deploying to the staging deployment of ${this.logDetail}.`);
-            deploymentName = await dh.getStagingDeploymentName(this.client, this.params);
-            if (!deploymentName) { //If no inactive deployment exists
-                console.log(`No staging deployment was found in ${this.logDetail}.`);
-                if (this.params.createNewDeployment) {
-                    console.log(`New deployment ${this.defaultInactiveDeploymentName} will be created in ${this.logDetail}`);
-                    deploymentName = this.defaultInactiveDeploymentName; //Create a new deployment with the default name.
-                    this.params.deploymentName = deploymentName;
-                } else
-                    throw Error(`No staging deployment in ${this.logDetail}`);
-            }
-        } else {
-            console.log(`Deploying to the production deployment of ${this.logDetail}.`);
-            deploymentName = await dh.getProductionDeploymentName(this.client, this.params);
-            this.params.deploymentName = deploymentName;
-            if(!deploymentName) {
-                throw Error(`Production deployment does not exist in ${this.logDetail}.`);
-            }
-        }
+        const appExist = await dh.appExist(this.client, this.params);
+        console.log('App exist : ', appExist);
+
+        // if (this.params.deploymentName) {
+        //     console.log(`Deploying for ${this.logDetail} to deployment ${this.params.deploymentName}.`);
+        //     deploymentName = this.params.deploymentName;
+        //     console.log(`deploymentName`, deploymentName);
+        //     console.log(`getAllDeploymentsName`);
+        //     let deploymentNames: Array<string> = await dh.getAllDeploymentsName(this.client, this.params);
+        //     console.log(`Found deployments names`, deploymentNames);
+        //     if (!deploymentNames || !deploymentNames.includes(deploymentName)) {
+        //         console.log(`Deployment ${deploymentName} does not exist`);
+        //         if (this.params.createNewDeployment) {
+        //             if (deploymentNames.length > 1) {
+        //                 throw Error(`More than 1 deployments already exist in ${this.logDetail}: ${JSON.stringify(deploymentNames)}`);
+        //             } else {
+        //                 console.log(`New Deployment will be created for ${this.logDetail}.`);
+        //             }
+        //         } else {
+        //             throw Error(`Deployment ${deploymentName} doesn\'t exist in ${this.logDetail}`);
+        //         }
+        //     }
+        // } else if (this.params.useStagingDeployment) {
+        //     console.log(`Deploying to the staging deployment of ${this.logDetail}.`);
+        //     deploymentName = await dh.getStagingDeploymentName(this.client, this.params);
+        //     if (!deploymentName) { //If no inactive deployment exists
+        //         console.log(`No staging deployment was found in ${this.logDetail}.`);
+        //         if (this.params.createNewDeployment) {
+        //             console.log(`New deployment ${this.defaultInactiveDeploymentName} will be created in ${this.logDetail}`);
+        //             deploymentName = this.defaultInactiveDeploymentName; //Create a new deployment with the default name.
+        //             this.params.deploymentName = deploymentName;
+        //         } else
+        //             throw Error(`No staging deployment in ${this.logDetail}`);
+        //     }
+        // } else {
+        //     console.log(`Deploying to the production deployment of ${this.logDetail}.`);
+        //     deploymentName = await dh.getProductionDeploymentName(this.client, this.params);
+        //     this.params.deploymentName = deploymentName;
+        //     if(!deploymentName) {
+        //         throw Error(`Production deployment does not exist in ${this.logDetail}.`);
+        //     }
+        // }
 
         await dh.deploy(this.client, this.params, sourceType, fileToUpload);
         console.log(`Deploy action successful for ${this.logDetail} to deployment ${deploymentName}.`);
